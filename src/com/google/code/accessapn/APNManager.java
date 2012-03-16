@@ -204,7 +204,7 @@ public class APNManager
             s += t + ":\t";
         }
         return s + "\n";
-    }
+    }   
 
     /**
      * Print all data records associated with Cursor c. Return a string that contains all record data. For some weird reason, Android SDK Log class cannot print very long string message. Thus we have to log record-by-record.
