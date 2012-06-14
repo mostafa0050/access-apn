@@ -1,5 +1,7 @@
 package com.google.code.accessapn;
 
+import java.lang.reflect.Method;
+
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -16,21 +18,20 @@ import android.util.Log;
  */
 public class APNManager
 {
-    private static final String TAG = APNManager.class.getSimpleName();
+    private static final String TAG               = APNManager.class.getSimpleName();
     private Context             mContext;
- 
 
     /*
      * Information of all APNs Details can be found in com.android.providers.telephony.TelephonyProvider
      */
-    public static final Uri   APN_TABLE_URI     =
-                                                        Uri.parse( "content://telephony/carriers" );
+    public static final Uri     APN_TABLE_URI     =
+                                                          Uri.parse( "content://telephony/carriers" );
     /*
      * Information of the preferred APN
      */
-    public static final Uri   PREFERRED_APN_URI =
-                                                        Uri.parse( "content://telephony/carriers/preferapn" );
-    private static APNManager sInstance;
+    public static final Uri     PREFERRED_APN_URI =
+                                                          Uri.parse( "content://telephony/carriers/preferapn" );
+    private static APNManager   sInstance;
 
     /**
      * Singleton method
@@ -95,9 +96,6 @@ public class APNManager
         }
         return res;
     }
- 
-    
-    
 
     /**
      * Insert a new APN entry into the system APN table Require an apn name, and the apn address. More can be added. Return an id (_id) that is automatically generated for the new apn entry.
@@ -116,13 +114,27 @@ public class APNManager
         values.put( "apn", _accessAddress );
 
         /*
-         * The following three field values are for testing in Android emulator only The APN setting page UI will ONLY display APNs whose 'numeric' 
-         * filed is TelephonyProperties.PROPERTY_SIM_OPERATOR_NUMERIC. On Android emulator, this value is 310260, where
+         * The following three field values are for testing in Android emulator only The APN setting page UI will ONLY display APNs whose 'numeric' filed is TelephonyProperties.PROPERTY_SIM_OPERATOR_NUMERIC. On Android emulator, this value is 310260, where
          * 310 is mcc, and 260 mnc. With these field values, the newly added apn will appear in system UI.
+         * @see  To get more information about getting umeric of a SIM card.
+         *       http://blog.163.com/tony_8014/blog/static/1833321972011926105948171/
+         *
          */
+
+        String serialnum = null;
+        try
+        {
+            Class<?> c = Class.forName( "android.os.SystemProperties" );
+            Method get = c.getMethod( "get", String.class, String.class );
+            serialnum = (String) (get.invoke( c, "gsm.sim.operator.numeric", "unknown" ));
+        }
+        catch( Exception ignored )
+        {
+        }
+
         values.put( "mcc", "310" );
-        values.put( "mnc", "260" );
-        values.put( "numeric", "310260" );
+        values.put( "mnc", "260" ); 
+        values.put( "numeric", serialnum );
 
         Cursor c = null;
         try
@@ -150,9 +162,10 @@ public class APNManager
             c.close();
         return id;
     }
-    
+
     /**
      * Update APN
+     * 
      * @param _name
      * @param _newAddress
      * @return
@@ -166,19 +179,18 @@ public class APNManager
         values.put( "apn", _newAddress );
 
         /*
-         * The following three field values are for testing in Android emulator only The APN setting page UI will ONLY display APNs whose 'numeric' 
-         * filed is TelephonyProperties.PROPERTY_SIM_OPERATOR_NUMERIC. On Android emulator, this value is 310260, where
+         * The following three field values are for testing in Android emulator only The APN setting page UI will ONLY display APNs whose 'numeric' filed is TelephonyProperties.PROPERTY_SIM_OPERATOR_NUMERIC. On Android emulator, this value is 310260, where
          * 310 is mcc, and 260 mnc. With these field values, the newly added apn will appear in system UI.
          */
-//        values.put( "mcc", "310" );
-//        values.put( "mnc", "260" );
-//        values.put( "numeric", "310260" );
- 
+        // values.put( "mcc", "310" );
+        // values.put( "mnc", "260" );
+        // values.put( "numeric", "310260" );
+
         try
-        { 
+        {
             int updatedRows = resolver.update( APN_TABLE_URI, values, "name='" + _name + "'", null );
             if( updatedRows > 0 )
-            { 
+            {
                 Log.d( TAG, "Updated APN:" + _name + ", New Address:" + _newAddress );
             }
         }
@@ -186,7 +198,7 @@ public class APNManager
         {
             Log.d( TAG, e.getMessage() );
         }
- 
+
         return id;
     }
 
@@ -204,7 +216,7 @@ public class APNManager
             s += t + ":\t";
         }
         return s + "\n";
-    }   
+    }
 
     /**
      * Print all data records associated with Cursor c. Return a string that contains all record data. For some weird reason, Android SDK Log class cannot print very long string message. Thus we have to log record-by-record.

@@ -11,13 +11,13 @@ public class AccessAPNActivity extends Activity
     public void onCreate( Bundle savedInstanceState )
     {
         super.onCreate( savedInstanceState );
-        setContentView( R.layout.main );
+        setContentView( R.layout.main );  
     }
     
     public void insertAPN( View _v )
     {
         APNManager apnMgr = APNManager.getInstance( getApplication() );
-        apnMgr.insertAPN( "Cellular", "cellular.de" );
+        apnMgr.insertAPN( "Cellular", "cellular.de" ); 
     }
     
     public void updateAPN( View _v )
